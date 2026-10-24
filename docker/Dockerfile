@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
     python3-bpfcc \
     python3.12-venv \
     bpfcc-tools \
-    && apt-get install -y linux-headers-$(uname -r) || apt-get install -y linux-headers-generic \
+    && (apt-get install -y linux-headers-$(uname -r) || apt-get install -y linux-headers-generic) \
+    && apt-get install -y \
     libbpf-dev \
     clang-14 \
     python3-setuptools \
