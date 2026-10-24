@@ -21,7 +21,6 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /opt/CoreNetworkTrafficGenerator
 COPY ./config /opt/CoreNetworkTrafficGenerator/config/
 COPY ./CryptoMobile /opt/CoreNetworkTrafficGenerator/CryptoMobile/
-COPY ./pycrate /opt/CoreNetworkTrafficGenerator/pycrate/
 COPY ./src /opt/CoreNetworkTrafficGenerator/src/
 COPY ./sctptrace /opt/CoreNetworkTrafficGenerator/sctptrace/
 COPY ./run.py /opt/CoreNetworkTrafficGenerator/run.py
@@ -30,7 +29,7 @@ RUN python3 -m venv --system-site-packages /opt/CoreNetworkTrafficGenerator/.ven
 
 RUN /bin/bash -c "source .venv/bin/activate && \
     pip install --upgrade pip setuptools && \
-    pip install pycrate tabulate scapy psutil bcc pytest pyroute2 pysctp cryptography pyyaml netifaces"
+    pip install pycrate==0.8.1 tabulate scapy psutil bcc pytest pyroute2 pysctp cryptography pyyaml netifaces"
 
 RUN /bin/bash -c "source .venv/bin/activate && \
     cd CryptoMobile && \

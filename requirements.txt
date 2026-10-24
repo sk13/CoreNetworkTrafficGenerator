@@ -41,7 +41,7 @@ pexpect==4.6.0
 pyasn1==0.4.2
 pyasn1-modules==0.2.1
 pycparser==2.21
-pycrate==0.5.5
+pycrate==0.8.1
 Pygments==2.3.1
 PyGObject==3.36.0
 PyHamcrest==1.9.0

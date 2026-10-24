@@ -1,9 +1,6 @@
 [submodule "CryptoMobile"]
 	path = CryptoMobile
 	url = https://github.com/P1sec/CryptoMobile.git
-[submodule "pycrate"]
-	path = pycrate
-	url = https://github.com/tariromukute/pycrate.git
 [submodule "sctptrace"]
 	path = sctptrace
 	url = https://github.com/5G-PEX/sctptrace.git

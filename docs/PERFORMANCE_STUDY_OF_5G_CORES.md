@@ -249,7 +249,7 @@ sudo apt install python3.8-venv
 python3 -m venv .venv
 source .venv/bin/activate
 
-pip install pycrate
+pip install pycrate==0.8.1
 pip install pysctp
 pip install cryptography
 pip install pyyaml

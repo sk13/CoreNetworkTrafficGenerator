@@ -44,7 +44,7 @@ sudo apt-get install python3-dev python3-bpfcc bpfcc-tools linux-headers-$(uname
 sudo ln /usr/bin/clang-14 /usr/bin/clang
 
 # Install Python packages
-pip install pycrate pysctp scapy pyroute2 cryptography pyyaml tabulate
+pip install pycrate==0.8.1 pysctp scapy pyroute2 cryptography pyyaml tabulate
 
 # Install CryptoMobile
 cd CryptoMobile && python3 setup.py install

@@ -7,7 +7,7 @@ import socket
 from src.SCTP import SCTPClient
 from pycrate_asn1dir import NGAP
 from pycrate_mobile.NAS import parse_NAS5G
-from pycrate_core import utils_py3
+from pycrate_core import utils
 import os
 import psutil
 import multiprocessing
@@ -121,7 +121,7 @@ def pdu_session_resource_setup(PDU):
     # TODO: handle mulitple QOS identifiers
     qos_identifiers = next((ie['value'][1] for ie in pduIEs if ie['id'] == 136), None)
     pdu_session_nas_pdu = pdu_session_resource_setup_list_su_req[0]['pDUSessionNAS-PDU']
-    dl_up_transport_layer_information = ('gTPTunnel', {'transportLayerAddress': (utils_py3.bytes_to_uint(socket.inet_aton(gtpIp), 32), 32), 'gTP-TEID': utils_py3.uint_to_bytes(ran_ue_ngap_id, 32) })
+    dl_up_transport_layer_information = ('gTPTunnel', {'transportLayerAddress': (utils.bytes_to_uint(socket.inet_aton(gtpIp), 32), 32), 'gTP-TEID': utils.uint_to_bytes(ran_ue_ngap_id, 32) })
     IEs = []
     # TODO: compose up_transport_layer_information
     pdu_session_resource_response(PDU, IEs, {'amf_ue_ngap_id': amf_ue_ngap_id, 'ran_ue_ngap_id': ran_ue_ngap_id,
@@ -289,9 +289,9 @@ class GNB():
                                 self.ues[ue_['ran_ue_ngap_id']] = { 'amf_ue_ngap_id': ue_['amf_ue_ngap_id'] }
                             self.ues[ue_['ran_ue_ngap_id']]['amf_ue_ngap_id'] = ue_['amf_ue_ngap_id']
                             if ue_.get('qos_identifier'):
-                                ul_teid = utils_py3.bytes_to_uint(ue_['ul_up_transport_layer_information'][1]['gTP-TEID'], 32)
-                                dl_teid = utils_py3.bytes_to_uint(ue_['dl_up_transport_layer_information'][1]['gTP-TEID'], 32)
-                                upf_address = socket.inet_ntoa(utils_py3.uint_to_bytes(ue_['ul_up_transport_layer_information'][1]['transportLayerAddress'][0], 32))
+                                ul_teid = utils.bytes_to_uint(ue_['ul_up_transport_layer_information'][1]['gTP-TEID'], 32)
+                                dl_teid = utils.bytes_to_uint(ue_['dl_up_transport_layer_information'][1]['gTP-TEID'], 32)
+                                upf_address = socket.inet_ntoa(utils.uint_to_bytes(ue_['ul_up_transport_layer_information'][1]['transportLayerAddress'][0], 32))
                                 logger.debug(f"UE {ue_['ran_ue_ngap_id']} PDU resource setup QOS id: {ue_['qos_identifier']} UL Address: {upf_address} UL teid {ul_teid} DL teid {dl_teid}")
                                 self.ues[ue_['ran_ue_ngap_id']]['qfi'] = ue_['qos_identifier']
                                 self.ues[ue_['ran_ue_ngap_id']]['ul_teid'] = ul_teid
