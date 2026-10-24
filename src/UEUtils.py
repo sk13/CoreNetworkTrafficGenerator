@@ -56,6 +56,7 @@ fg_msg_names = {
     72: "5GMMMTDeregistrationAccept",
     73: "5GMMMODeregistrationComplete",  # For internal use only, it's not a real message type
     74: "5GMMANConnectionReleaseComplete",  # For internal use only, it's not a real message type
+    75: "5GSMPDUSessionEstabComplete",  # For internal use only, it's not a real message type
     # # service request
     # 76: "5GMMServiceRequest",
     # 77: "5GMMServiceReject",
