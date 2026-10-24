@@ -271,7 +271,7 @@ class UE:
             return Msg, self, sent_type
         
         DecryptMsg = None
-        if Msg !=  None and Msg._name == '5GMMSecProtNASMessage':
+        if Msg !=  None and Msg._name == '5GMMSecProtNASMessage' and hasattr(Msg, '_dec_msg'):
             DecryptMsg, e = parse_NAS5G(Msg._dec_msg)
         logger.debug(f" \n|----------------------------------------------------------------------------------------------------------------|\n\
         UE {self.supi} sending message \n\

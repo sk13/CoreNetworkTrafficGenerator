@@ -130,15 +130,11 @@ def security_prot_encrypt(ue, Msg):
 def security_prot_encrypt_ciphered(ue, Msg):
     try:
         IEs = {}
-        if ue.CiphAlgo != 0:
-            IEs['5GMMHeaderSec'] = { 'EPD': 126, 'spare': 0, 'SecHdr': 2 }
-        else:
-            IEs['5GMMHeaderSec'] = { 'EPD': 126, 'spare': 0, 'SecHdr': 0 }
-            # return Msg
+        # 5G-EA0 (null ciphering) is still sent as integrity protected and ciphered: encrypt() leaves the payload as it is
+        IEs['5GMMHeaderSec'] = { 'EPD': 126, 'spare': 0, 'SecHdr': 2 }
         SecMsg = FGMMSecProtNASMessage(val=IEs)
         SecMsg['NASMessage'].set_val(Msg.to_bytes())
-        if ue.CiphAlgo != 0:
-            SecMsg.encrypt(key=ue.k_nas_enc, dir=0, fgea=ue.CiphAlgo, seqnoff=0, bearer=1)
+        SecMsg.encrypt(key=ue.k_nas_enc, dir=0, fgea=ue.CiphAlgo, seqnoff=0, bearer=1)
         if ue.IntegAlgo != 0:
             SecMsg.mac_compute(key=ue.k_nas_int, dir=0, fgia=ue.IntegAlgo, seqnoff=0, bearer=1)
         return SecMsg
@@ -153,7 +149,8 @@ def security_prot_decrypt(Msg, ue):
         # decrypt message
         try:
             Msg.decrypt(ue.k_nas_enc, dir=1, fgea=ue.CiphAlgo, seqnoff=0, bearer=1)
-            Msg, err = parse_NAS5G(Msg._dec_msg)
+            # decrypt() leaves _dec_msg unset for 5G-EA0: the payload is not ciphered
+            Msg, err = parse_NAS5G(getattr(Msg, '_dec_msg', None) or Msg[-1].to_bytes())
             if err:
                 return None
             return Msg
