@@ -78,7 +78,8 @@ class UESim:
         
         Msg, err = parse_NAS5G(data)
         if err:
-            return None, ue
+            logger.error("Error parsing the downlink NAS message of UE %s: %s", ue.supi, err)
+            return None, ue, None
         
         msg_type = Msg._name
         
@@ -153,33 +154,38 @@ class UESim:
             with lock:
                 data, ueId = self.ue_to_ngap.recv()
             if data:
-                tx_nas_pdu, ue, sent_type = self.dispatcher(data, ueId)
-                self.ue_list[int(ue.supi[-10:])] = ue
-                if tx_nas_pdu and sent_type != '5GSMPDUSessionTransmission':
-                    self.ue_to_ngap.send((tx_nas_pdu, ueId))
-                elif tx_nas_pdu:
-                    self.ue_to_upf.send((tx_nas_pdu, ueId))
-                    
-                if sent_type == '5GMMRegistrationComplete' or sent_type == '5GSMPDUSessionEstabComplete' or sent_type == '5GSMPDUSessionTransmissionComplete':
-                    # send the next procedure
-                    tx_nas_pdu, ue, sent_type = self.dispatcher(None, ueId)
+                try:
+                    tx_nas_pdu, ue, sent_type = self.dispatcher(data, ueId)
                     self.ue_list[int(ue.supi[-10:])] = ue
-
                     if tx_nas_pdu and sent_type != '5GSMPDUSessionTransmission':
                         self.ue_to_ngap.send((tx_nas_pdu, ueId))
                     elif tx_nas_pdu:
                         self.ue_to_upf.send((tx_nas_pdu, ueId))
-                
-                # TODO: handle recording of operation
-                if sent_type is None: # Leave state as is, e.g., on ConfigurationUpdateCommand
-                    continue
-                msg_code = fg_msg_codes[sent_type] - FGMM_MIN_TYPE
-                self.procedures_count[ue.current_procedure] = self.procedures_count.get(ue.current_procedure, 1) - 1
-                with self.ue_fg_msg_states.get_lock():
-                    self.ue_fg_msg_states[ue.current_procedure] -= 1
-                    self.ue_fg_msg_states[msg_code] += 1
-                self.procedures_count[msg_code] = self.procedures_count.get(msg_code, 0) + 1
-                ue.current_procedure = msg_code     
+
+                    if sent_type == '5GMMRegistrationComplete' or sent_type == '5GSMPDUSessionEstabComplete' or sent_type == '5GSMPDUSessionTransmissionComplete':
+                        # send the next procedure
+                        tx_nas_pdu, ue, sent_type = self.dispatcher(None, ueId)
+                        self.ue_list[int(ue.supi[-10:])] = ue
+
+                        if tx_nas_pdu and sent_type != '5GSMPDUSessionTransmission':
+                            self.ue_to_ngap.send((tx_nas_pdu, ueId))
+                        elif tx_nas_pdu:
+                            self.ue_to_upf.send((tx_nas_pdu, ueId))
+
+                    # TODO: handle recording of operation
+                    if sent_type is None: # Leave state as is, e.g., on ConfigurationUpdateCommand
+                        continue
+                    msg_code = fg_msg_codes[sent_type] - FGMM_MIN_TYPE
+                    self.procedures_count[ue.current_procedure] = self.procedures_count.get(ue.current_procedure, 1) - 1
+                    with self.ue_fg_msg_states.get_lock():
+                        self.ue_fg_msg_states[ue.current_procedure] -= 1
+                        self.ue_fg_msg_states[msg_code] += 1
+                    self.procedures_count[msg_code] = self.procedures_count.get(msg_code, 0) + 1
+                    ue.current_procedure = msg_code
+                except Exception:
+                    # a message that cannot be handled (an unknown type, a bad format) must not stop the only
+                    # thread that serves all the UEs of this gNB: the UE it belongs to stays where it is
+                    logger.exception("Cannot handle a downlink message of UE %s", ueId)
     
     def init(self):
         global start_time
