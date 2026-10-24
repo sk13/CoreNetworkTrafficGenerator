@@ -133,10 +133,15 @@ def security_prot_encrypt_ciphered(ue, Msg):
         # 5G-EA0 (null ciphering) is still sent as integrity protected and ciphered: encrypt() leaves the payload as it is
         IEs['5GMMHeaderSec'] = { 'EPD': 126, 'spare': 0, 'SecHdr': 2 }
         SecMsg = FGMMSecProtNASMessage(val=IEs)
+        # the uplink NAS COUNT counts up from the Security Mode Complete: the Seqn is its low byte, seqnoff the overflow
+        ul_count = ue.ul_nas_count
+        ue.ul_nas_count += 1
+        SecMsg['Seqn'].set_val(ul_count & 0xff)
+        seqnoff = ul_count & ~0xff
         SecMsg['NASMessage'].set_val(Msg.to_bytes())
-        SecMsg.encrypt(key=ue.k_nas_enc, dir=0, fgea=ue.CiphAlgo, seqnoff=0, bearer=1)
+        SecMsg.encrypt(key=ue.k_nas_enc, dir=0, fgea=ue.CiphAlgo, seqnoff=seqnoff, bearer=1)
         if ue.IntegAlgo != 0:
-            SecMsg.mac_compute(key=ue.k_nas_int, dir=0, fgia=ue.IntegAlgo, seqnoff=0, bearer=1)
+            SecMsg.mac_compute(key=ue.k_nas_int, dir=0, fgia=ue.IntegAlgo, seqnoff=seqnoff, bearer=1)
         return SecMsg
     except:
         return Msg

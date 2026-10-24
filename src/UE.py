@@ -163,6 +163,7 @@ class UE:
         self.RcvMsgInBytes = None
         self.IpAddress = None
         self.CiphAlgo = None
+        self.ul_nas_count = 0 # uplink NAS COUNT, the AMF drops a message whose COUNT it already saw
         self.IntegAlgo = None
         self.start_time = None
         self.end_time = None
