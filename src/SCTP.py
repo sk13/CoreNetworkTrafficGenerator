@@ -61,7 +61,7 @@ class SCTPClient():
 
         socket_lock.acquire()
         try:
-            self.__socket.sctp_send(data, ppid=socket.htonl(60))
+            self.__socket.sctp_send(data, ppid=60)
         except ConnectionResetError:
             print("************ Connection reset ******************")
             self.disconnect()
