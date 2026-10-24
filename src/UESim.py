@@ -30,7 +30,7 @@ import threading
 
 # Create a lock object
 lock = threading.Lock()
-num_threads = 2
+num_threads = 1 # one thread for each direction: with more, the messages of a UE are handled out of order
 class UESim:
     exit_flag = False
     global start_time

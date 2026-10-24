@@ -170,7 +170,7 @@ import threading
 # Create a lock object
 ue_to_ngap_lock = threading.Lock()
 ngap_to_ue_lock = threading.Lock()
-num_threads = 2
+num_threads = 1 # one thread for each direction: with more, the messages of a UE are handled out of order
 pdu_lock = threading.Lock() # guards the one NGAP_PDU object that all the threads of a gNB share
 class GNB():
 
