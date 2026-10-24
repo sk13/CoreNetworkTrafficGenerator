@@ -94,8 +94,8 @@ class UESim:
                 else:
                     logger.error("Unexpected None value for Decrypted 5GMMSecProtNASMessage Msg")
                     return None, ue, None
-            except err:
-                logger.exception(err)
+            except Exception:
+                logger.exception("Cannot decrypt the downlink message of UE %s", ue.supi)
                 return None, ue, None
 
         if Msg._name == '5GMMDLNASTransport':
