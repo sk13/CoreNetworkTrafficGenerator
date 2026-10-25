@@ -211,7 +211,7 @@ class UESim:
         global start_time
         latest_time = start_time
         end_time = time.time()
-        min_interval = 9999999
+        min_interval = float("inf")
         max_interval = 0
         completed = 0
         sum_interval = 0

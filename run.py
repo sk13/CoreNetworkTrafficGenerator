@@ -1,6 +1,7 @@
 # Standard library imports
 import time
 import csv
+import math
 from argparse import ArgumentParser
 
 # Define struct for arguments
@@ -435,7 +436,8 @@ def main(args):
     time.sleep(5)
 
     # This will store the start and end time of the UE simulation/emulation
-    ue_sim_time = TimeRange(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0)
+    # the minimum starts at infinity: from 0.0 no interval is ever smaller, and the Min interval was always 0
+    ue_sim_time = TimeRange(0.0, 0.0, float("inf"), 0.0, 0.0, 0.0, 0.0, 0, 0)
 
     ue_fg_msg_states = multiprocessing.Array(
         "i", tuple([0] * (FGSM_MAX_TYPE - FGMM_MIN_TYPE + 1)), lock=True
@@ -543,6 +545,11 @@ def main(args):
     for child in children:
         child.terminate()
 
+    # Still infinity when no process has merged an interval (no UE completed, or a process was stopped before it merged): unknown
+    min_interval = ue_sim_time.min_interval.value
+    if not math.isfinite(min_interval):
+        min_interval = -1
+
     # Collect the time on each UE
     table = [
         [
@@ -553,7 +560,7 @@ def main(args):
         ["N# of UEs", num_ues],
         ["Successful procedures ", f"{ue_sim_time.success.value} UEs"],
         ["Failed procedures", f"{num_ues - ue_sim_time.success.value} UEs"],
-        ["Min interval", f"{ue_sim_time.min_interval.value} seconds"],
+        ["Min interval", f"{min_interval} seconds"],
         [
             "Avg interval",
             f"{ue_sim_time.sum_interval.value/ue_sim_time.success.value if ue_sim_time.success.value > 0 else -1} seconds",
@@ -584,7 +591,7 @@ def main(args):
             num_ues,
             ue_sim_time.success.value,
             num_ues - ue_sim_time.success.value,
-            ue_sim_time.min_interval.value,
+            min_interval,
             (
                 ue_sim_time.sum_interval.value / ue_sim_time.success.value
                 if ue_sim_time.success.value > 0
