@@ -223,11 +223,25 @@ class UESim:
             jsonArray.append(ue.procedure_times)
             # Get the UE that had the latest state_time and calculate the time it took all UEs to be registered
             # Don't consider UEs that didn't get a respond
-            if ue.current_procedure == (fg_msg_codes["5GMMANConnectionReleaseComplete"] - FGMM_MIN_TYPE) and ue.end_time != None and ue.start_time != None:
+            # A UE has done what its profile asks for when it is in the last state, 5GMMANConnectionReleaseComplete. With a
+            # deregistration the network releases the connection, which sets end_time. A profile without one (a registration, or a
+            # registration and a PDU session) ends with its last procedure: nobody releases the connection and there is no end_time,
+            # the UE got to the last state when its procedures ran out, and procedure_times has that time. The procedures run out
+            # after a reject, too (next_action has no response for it and returns the release), so each procedure that ends with a
+            # message of the UE has to have sent it: the Registration Complete, the PDU Session Establishment Complete
+            release = fg_msg_codes["5GMMANConnectionReleaseComplete"]
+            completes = {'5GMMRegistrationRequest': '5GMMRegistrationComplete',
+                         '5GSMPDUSessionEstabRequest': '5GSMPDUSessionEstabComplete'}
+            end = ue.end_time
+            if end is None and '5GMMMODeregistrationRequest' not in ue.procedures \
+                    and all(fg_msg_codes[c] in ue.procedure_times for r, c in completes.items() if r in ue.procedures):
+                end = ue.procedure_times.get(release)
+            if ue.current_procedure == (release - FGMM_MIN_TYPE) and end != None and ue.start_time != None:
+                interval = end - ue.start_time
                 latest_time = ue.state_time if latest_time < ue.state_time else latest_time
-                min_interval = ue.end_time - ue.start_time if (min_interval > ue.end_time - ue.start_time and ue.end_time - ue.start_time != 0)  else min_interval
-                max_interval = ue.end_time - ue.start_time if max_interval < ue.end_time - ue.start_time else max_interval
-                sum_interval += ue.end_time - ue.start_time
+                min_interval = interval if (min_interval > interval and interval != 0) else min_interval
+                max_interval = interval if max_interval < interval else max_interval
+                sum_interval += interval
                 with self.ue_sim_time.success.get_lock():
                     self.ue_sim_time.success.value += 1
             else:
